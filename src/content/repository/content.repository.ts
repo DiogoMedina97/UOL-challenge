@@ -1,16 +1,18 @@
-import { DataSource } from 'typeorm'
+import { Repository, IsNull } from 'typeorm'
 import { Injectable } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
 import { Content } from 'src/content/entity'
 
 @Injectable()
 export class ContentRepository {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(@InjectRepository(Content) private readonly contentRepository: Repository<Content>) {}
 
   async findOne(contentId: string): Promise<Content | null> {
-    const [content] = await this.dataSource.query<Content[]>(
-      `SELECT * FROM contents WHERE id = '${contentId}' AND deleted_at IS NULL LIMIT 1`,
-    )
-
-    return content || null
+    return this.contentRepository.findOne({
+      where: {
+        id: contentId,
+        deleted_at: IsNull(),
+      },
+    })
   }
 }
