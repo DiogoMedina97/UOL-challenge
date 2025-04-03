@@ -1,5 +1,4 @@
 import * as fs from 'fs'
-import * as path from 'path'
 import {
   BadRequestException,
   Injectable,
@@ -9,6 +8,8 @@ import {
 } from '@nestjs/common'
 import { ContentRepository } from 'src/content/repository'
 import { ProvisionDto } from 'src/content/dto'
+import { Content } from 'src/content/entity'
+import { ContentFactory } from 'src/content/factory'
 
 @Injectable()
 export class ContentService {
@@ -24,7 +25,7 @@ export class ContentService {
     }
 
     this.logger.log(`Provisioning content for id=${contentId}`)
-    let content
+    let content: Content | null
 
     try {
       content = await this.contentRepository.findOne(contentId)
@@ -54,81 +55,14 @@ export class ContentService {
       throw new BadRequestException('Content type is missing')
     }
 
-    if (['pdf', 'image', 'video', 'link'].includes(content.type)) {
-      switch (content.type) {
-        case 'pdf':
-          return {
-            id: content.id,
-            title: content.title,
-            cover: content.cover,
-            created_at: content.created_at,
-            description: content.description,
-            total_likes: content.total_likes,
-            type: 'pdf',
-            url,
-            allow_download: true,
-            is_embeddable: false,
-            format: 'pdf',
-            bytes,
-            metadata: {
-              author: 'Unknown',
-              pages: Math.floor(bytes / 50000) || 1,
-              encrypted: false,
-            },
-          }
-        case 'image':
-          return {
-            id: content.id,
-            title: content.title,
-            cover: content.cover,
-            created_at: content.created_at,
-            description: content.description,
-            total_likes: content.total_likes,
-            type: 'image',
-            url,
-            allow_download: true,
-            is_embeddable: true,
-            format: path.extname(content.url || '').slice(1) || 'jpg',
-            bytes,
-            metadata: { resolution: '1920x1080', aspect_ratio: '16:9' },
-          }
-        case 'video':
-          return {
-            id: content.id,
-            title: content.title,
-            cover: content.cover,
-            created_at: content.created_at,
-            description: content.description,
-            total_likes: content.total_likes,
-            type: 'video',
-            url,
-            allow_download: false,
-            is_embeddable: true,
-            format: path.extname(content.url || '').slice(1) || 'mp4',
-            bytes,
-            metadata: { duration: Math.floor(bytes / 100000) || 10, resolution: '1080p' },
-          }
-        case 'link':
-          return {
-            id: content.id,
-            title: content.title,
-            cover: content.cover,
-            created_at: content.created_at,
-            description: content.description,
-            total_likes: content.total_likes,
-            type: 'link',
-            url: content.url || 'http://default.com',
-            allow_download: false,
-            is_embeddable: true,
-            format: null,
-            bytes: 0,
-            metadata: { trusted: content.url?.includes('https') || false },
-          }
-      }
+    const contentInstance = ContentFactory.createContent(content.type, content, url, bytes)
+
+    if (!contentInstance) {
+      this.logger.warn(`Unsupported content type for ID=${contentId}, type=${content.type}`)
+      throw new BadRequestException(`Unsupported content type: ${content.type}`)
     }
 
-    this.logger.warn(`Unsupported content type for ID=${contentId}, type=${content.type}`)
-    throw new BadRequestException(`Unsupported content type: ${content.type}`)
+    return contentInstance.toDto()
   }
 
   private generateSignedUrl(originalUrl: string): string {
