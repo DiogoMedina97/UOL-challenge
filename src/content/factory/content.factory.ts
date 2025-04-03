@@ -1,6 +1,13 @@
 import { Content } from 'src/content/entity'
 import { ContentType } from 'src/content/enum/content.enum'
-import { BaseContent, ImageContent, LinkContent, PdfContent, VideoContent } from 'src/content/model'
+import {
+  BaseContent,
+  ImageContent,
+  LinkContent,
+  PdfContent,
+  TextContent,
+  VideoContent,
+} from 'src/content/model'
 
 export class ContentFactory {
   static createContent(
@@ -18,6 +25,8 @@ export class ContentFactory {
         return new VideoContent(content, url, bytes)
       case ContentType.LINK:
         return new LinkContent(content, url, bytes)
+      case ContentType.TEXT:
+        return new TextContent(content, url, bytes)
       default:
         return null
     }

@@ -113,6 +113,18 @@ export const seedDatabase = async (dataSource: DataSource) => {
         company: createdCompany1,
       }),
     ),
+    queryRunner.manager.save(
+      queryRunner.manager.create(Content, {
+        id: 'ab4b0168-1c42-4890-aff3-a00e0f762079',
+        title: 'Dicas de Desenvolvimento',
+        description: null,
+        url: 'http://localhost:3000/uploads/text1.txt',
+        cover: null,
+        type: ContentType.TEXT,
+        total_likes: 5,
+        company: createdCompany2,
+      }),
+    ),
   ])
 
   console.info('Database seeded successfully.')
