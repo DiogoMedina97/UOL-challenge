@@ -9,6 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm'
 import { Company } from 'src/company/entity'
+import { ContentType } from 'src/content/enum'
 
 @Entity('contents')
 export class Content {
@@ -19,7 +20,7 @@ export class Content {
   title: string
 
   @Column()
-  type: string
+  type: ContentType
 
   @Column()
   description?: string

@@ -4,6 +4,7 @@ import { User } from 'src/user/entity'
 import { Company } from 'src/company/entity'
 import { AppDataSource } from 'src/database/data-source.database'
 import { Content } from 'src/content/entity'
+import { ContentType } from 'src/content/enum'
 
 export const seedDatabase = async (dataSource: DataSource) => {
   const queryRunner = dataSource.createQueryRunner()
@@ -43,7 +44,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
         description: 'Uma imagem ilustrativa sobre a cultura de trabalho em equipe.',
         url: 'http://localhost:3000/uploads/image1.jpg',
         cover: 'http://localhost:3000/uploads/image1-cover.jpg',
-        type: 'image',
+        type: ContentType.IMAGE,
         total_likes: 0,
         company: createdCompany1,
       }),
@@ -56,7 +57,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
           'Uma imagem representando espaços colaborativos e inovação nas empresas de tecnologia.',
         url: 'http://localhost:3000/uploads/image2.png',
         cover: 'http://localhost:3000/uploads/image2-cover.jpg',
-        type: 'image',
+        type: ContentType.IMAGE,
         total_likes: 2,
         company: createdCompany1,
       }),
@@ -69,7 +70,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
           'Um documento detalhado sobre boas práticas de programação e metodologias ágeis.',
         url: 'http://localhost:3000/uploads/pdf1.pdf',
         cover: 'http://localhost:3000/uploads/pdf1-cover.jpg',
-        type: 'pdf',
+        type: ContentType.PDF,
         total_likes: 4,
         company: createdCompany1,
       }),
@@ -82,7 +83,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
           'Um manual técnico abordando padrões arquiteturais e boas práticas para sistemas escaláveis.',
         url: 'http://localhost:3000/uploads/pdf2.pdf',
         cover: 'http://localhost:3000/uploads/pdf2-cover.jpg',
-        type: 'pdf',
+        type: ContentType.PDF,
         total_likes: 6,
         company: createdCompany2,
       }),
@@ -95,7 +96,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
           'Acesse este link para cursos e treinamentos voltados para tecnologia e inovação.',
         url: 'https://learning.rocks',
         cover: null,
-        type: 'link',
+        type: ContentType.LINK,
         total_likes: 8,
         company: createdCompany1,
       }),
@@ -107,7 +108,7 @@ export const seedDatabase = async (dataSource: DataSource) => {
         description: null,
         url: 'http://localhost:3000/uploads/video1.mp4',
         cover: 'http://localhost:3000/uploads/video1-cover.jpg',
-        type: 'video',
+        type: ContentType.VIDEO,
         total_likes: 10,
         company: createdCompany1,
       }),
