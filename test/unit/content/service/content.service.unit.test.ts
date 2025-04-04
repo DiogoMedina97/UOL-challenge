@@ -176,6 +176,24 @@ export class ContentServiceUnitTest {
   }
 
   @test
+  async '[provision] Should return provisioned Text content'() {
+    jest.spyOn(this.contentRepository, 'findOne').mockResolvedValue(this.mockContent('text', 'txt'))
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true)
+    jest.spyOn(fs, 'statSync').mockReturnValue({ size: 1000000 } as fs.Stats)
+
+    const result = await this.contentService.provision('ab4b0168-1c42-4890-aff3-a00e0f762079')
+
+    expect(result).toMatchObject({
+      type: 'text',
+      allow_download: true,
+      is_embeddable: false,
+      format: 'txt',
+      bytes: 1000000,
+      metadata: { enconding: 'UTF-8' },
+    })
+  }
+
+  @test
   async '[provision] Should throw UnprocessableEntityException if content ID is missing'() {
     await expect(this.contentService.provision('')).rejects.toThrow(UnprocessableEntityException)
   }
