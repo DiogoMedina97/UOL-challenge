@@ -176,6 +176,28 @@ export class ContentServiceUnitTest {
   }
 
   @test
+  async '[provision] Should return URL as trusted (Link content)'() {
+    jest
+      .spyOn(this.contentRepository, 'findOne')
+      .mockResolvedValue(this.mockContent('link', null, 'https://example.com'))
+
+    const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
+
+    expect((result.metadata as any).trusted).toBe(true)
+  }
+
+  @test
+  async '[provision] Should return URL as untrusted (Link content)'() {
+    jest
+      .spyOn(this.contentRepository, 'findOne')
+      .mockResolvedValue(this.mockContent('link', null, 'http://example.com'))
+
+    const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
+
+    expect((result.metadata as any).trusted).toBe(false)
+  }
+
+  @test
   async '[provision] Should return provisioned Text content'() {
     jest.spyOn(this.contentRepository, 'findOne').mockResolvedValue(this.mockContent('text', 'txt'))
     jest.spyOn(fs, 'existsSync').mockReturnValue(true)
