@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { suite, test } from '@testdeck/jest'
+import * as fs from 'fs'
 import { ContentService } from 'src/content/service'
 import { ContentRepository } from 'src/content/repository'
 import {
@@ -8,14 +9,14 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common'
 import { Content } from 'src/content/entity'
-import * as fs from 'fs'
+import { ContentType } from 'src/content/enum'
 
 @suite
 export class ContentServiceUnitTest {
   private contentService: ContentService
   private contentRepository: ContentRepository
 
-  private readonly mockContent = (type: string, format?: string, url?: string): Content =>
+  private readonly mockContent = (type: ContentType, format?: string, url?: string): Content =>
     ({
       id: '4372ebd1-2ee8-4501-9ed5-549df46d0eb0',
       title: `Test ${type}`,
@@ -46,7 +47,7 @@ export class ContentServiceUnitTest {
   @test
   async '[provision] Should throw BadRequestException if content type is missing'() {
     const mockContentWithoutType = {
-      ...this.mockContent('pdf'),
+      ...this.mockContent(ContentType.PDF),
       type: undefined,
     } as any
 
@@ -65,14 +66,16 @@ export class ContentServiceUnitTest {
 
   @test
   async '[provision] Should return provisioned PDF content'() {
-    jest.spyOn(this.contentRepository, 'findOne').mockResolvedValue(this.mockContent('pdf', 'pdf'))
+    jest
+      .spyOn(this.contentRepository, 'findOne')
+      .mockResolvedValue(this.mockContent(ContentType.PDF, 'pdf'))
     jest.spyOn(fs, 'existsSync').mockReturnValue(true)
     jest.spyOn(fs, 'statSync').mockReturnValue({ size: 50000 } as fs.Stats)
 
     const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
 
     expect(result).toMatchObject({
-      type: 'pdf',
+      type: ContentType.PDF,
       allow_download: true,
       is_embeddable: false,
       format: 'pdf',
@@ -85,14 +88,14 @@ export class ContentServiceUnitTest {
   async '[provision] Should return provisioned Image content'() {
     jest
       .spyOn(this.contentRepository, 'findOne')
-      .mockResolvedValue(this.mockContent('image', 'png'))
+      .mockResolvedValue(this.mockContent(ContentType.IMAGE, 'png'))
     jest.spyOn(fs, 'existsSync').mockReturnValue(true)
     jest.spyOn(fs, 'statSync').mockReturnValue({ size: 20000 } as fs.Stats)
 
     const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
 
     expect(result).toMatchObject({
-      type: 'image',
+      type: ContentType.IMAGE,
       allow_download: true,
       is_embeddable: true,
       format: 'png',
@@ -103,14 +106,16 @@ export class ContentServiceUnitTest {
 
   @test
   async '[provision] Should return provisioned Image content with default format'() {
-    jest.spyOn(this.contentRepository, 'findOne').mockResolvedValue(this.mockContent('image', ''))
+    jest
+      .spyOn(this.contentRepository, 'findOne')
+      .mockResolvedValue(this.mockContent(ContentType.IMAGE, ''))
     jest.spyOn(fs, 'existsSync').mockReturnValue(true)
     jest.spyOn(fs, 'statSync').mockReturnValue({ size: 20000 } as fs.Stats)
 
     const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
 
     expect(result).toMatchObject({
-      type: 'image',
+      type: ContentType.IMAGE,
       allow_download: true,
       is_embeddable: true,
       format: 'jpg',
@@ -123,14 +128,14 @@ export class ContentServiceUnitTest {
   async '[provision] Should return provisioned Video content'() {
     jest
       .spyOn(this.contentRepository, 'findOne')
-      .mockResolvedValue(this.mockContent('video', 'avi'))
+      .mockResolvedValue(this.mockContent(ContentType.VIDEO, 'avi'))
     jest.spyOn(fs, 'existsSync').mockReturnValue(true)
     jest.spyOn(fs, 'statSync').mockReturnValue({ size: 1000000 } as fs.Stats)
 
     const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
 
     expect(result).toMatchObject({
-      type: 'video',
+      type: ContentType.VIDEO,
       allow_download: false,
       is_embeddable: true,
       format: 'avi',
@@ -141,14 +146,16 @@ export class ContentServiceUnitTest {
 
   @test
   async '[provision] Should return provisioned Video content with default format'() {
-    jest.spyOn(this.contentRepository, 'findOne').mockResolvedValue(this.mockContent('video', ''))
+    jest
+      .spyOn(this.contentRepository, 'findOne')
+      .mockResolvedValue(this.mockContent(ContentType.VIDEO, ''))
     jest.spyOn(fs, 'existsSync').mockReturnValue(true)
     jest.spyOn(fs, 'statSync').mockReturnValue({ size: 1000000 } as fs.Stats)
 
     const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
 
     expect(result).toMatchObject({
-      type: 'video',
+      type: ContentType.VIDEO,
       allow_download: false,
       is_embeddable: true,
       format: 'mp4',
@@ -161,12 +168,12 @@ export class ContentServiceUnitTest {
   async '[provision] Should return provisioned Link content'() {
     jest
       .spyOn(this.contentRepository, 'findOne')
-      .mockResolvedValue(this.mockContent('link', null, 'https://example.com'))
+      .mockResolvedValue(this.mockContent(ContentType.LINK, null, 'https://example.com'))
 
     const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
 
     expect(result).toMatchObject({
-      type: 'link',
+      type: ContentType.LINK,
       allow_download: false,
       is_embeddable: true,
       format: null,
@@ -179,7 +186,7 @@ export class ContentServiceUnitTest {
   async '[provision] Should return URL as trusted (Link content)'() {
     jest
       .spyOn(this.contentRepository, 'findOne')
-      .mockResolvedValue(this.mockContent('link', null, 'https://example.com'))
+      .mockResolvedValue(this.mockContent(ContentType.LINK, null, 'https://example.com'))
 
     const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
 
@@ -190,7 +197,7 @@ export class ContentServiceUnitTest {
   async '[provision] Should return URL as untrusted (Link content)'() {
     jest
       .spyOn(this.contentRepository, 'findOne')
-      .mockResolvedValue(this.mockContent('link', null, 'http://example.com'))
+      .mockResolvedValue(this.mockContent(ContentType.LINK, null, 'http://example.com'))
 
     const result = await this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0')
 
@@ -199,14 +206,16 @@ export class ContentServiceUnitTest {
 
   @test
   async '[provision] Should return provisioned Text content'() {
-    jest.spyOn(this.contentRepository, 'findOne').mockResolvedValue(this.mockContent('text', 'txt'))
+    jest
+      .spyOn(this.contentRepository, 'findOne')
+      .mockResolvedValue(this.mockContent(ContentType.TEXT, 'txt'))
     jest.spyOn(fs, 'existsSync').mockReturnValue(true)
     jest.spyOn(fs, 'statSync').mockReturnValue({ size: 1000000 } as fs.Stats)
 
     const result = await this.contentService.provision('ab4b0168-1c42-4890-aff3-a00e0f762079')
 
     expect(result).toMatchObject({
-      type: 'text',
+      type: ContentType.TEXT,
       allow_download: true,
       is_embeddable: false,
       format: 'txt',
@@ -240,7 +249,9 @@ export class ContentServiceUnitTest {
 
   @test
   async '[provision] Should throw BadRequestException for unsupported content type'() {
-    jest.spyOn(this.contentRepository, 'findOne').mockResolvedValue(this.mockContent('unsupported'))
+    jest
+      .spyOn(this.contentRepository, 'findOne')
+      .mockResolvedValue(this.mockContent('unsupported' as ContentType))
 
     await expect(
       this.contentService.provision('4372ebd1-2ee8-4501-9ed5-549df46d0eb0'),
@@ -249,7 +260,9 @@ export class ContentServiceUnitTest {
 
   @test
   async '[provision] Should log file system errors but not fail'() {
-    jest.spyOn(this.contentRepository, 'findOne').mockResolvedValue(this.mockContent('pdf', 'pdf'))
+    jest
+      .spyOn(this.contentRepository, 'findOne')
+      .mockResolvedValue(this.mockContent(ContentType.PDF, 'pdf'))
     jest.spyOn(fs, 'existsSync').mockImplementation(() => {
       throw new Error('File system error')
     })

@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { suite, test } from '@testdeck/jest'
+import { getRepositoryToken } from '@nestjs/typeorm'
 import { ContentRepository } from 'src/content/repository'
 import { IsNull, Repository } from 'typeorm'
 import { Content } from 'src/content/entity'
-import { getRepositoryToken } from '@nestjs/typeorm'
+import { ContentType } from 'src/content/enum'
 
 @suite
 export class ContentRepositoryUnitTest {
@@ -17,7 +18,7 @@ export class ContentRepositoryUnitTest {
     url: 'http://localhost:3000/uploads/dummy.pdf',
     created_at: new Date('2025-01-31T23:39:54.236Z'),
     total_likes: 10,
-    type: 'pdf',
+    type: ContentType.PDF,
   } as Content
 
   async before() {
